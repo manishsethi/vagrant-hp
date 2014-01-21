@@ -1,11 +1,12 @@
+# vim: tabstop=2 shiftwidth=2 softtabstop=2
 #
 # Author:: Mohit Sethi (<mohit@sethis.in>)
 # Copyright:: Copyright (c) 2013 Mohit Sethi.
 #
 
 require 'log4r'
-
 require 'vagrant/util/subprocess'
+require 'vagrant/util/which'
 
 module VagrantPlugins
   module HP
@@ -19,13 +20,20 @@ module VagrantPlugins
         end
 
         def ssh_key_options(ssh_info)
-            Array(ssh_info[:private_key_path]).map { |path| "-i '#{path}' " }.join
+          Array(ssh_info[:private_key_path]).map { |path| "-i '#{path}' " }.join
         end
 
         def call(env)
           @app.call(env)
-
           ssh_info = env[:machine].ssh_info
+          if env[:machine].communicate.execute('which rsync', :error_check => false) != 0
+            env[:ui].warn(I18n.t('vagrant_hp.rsync_not_found_warning', :side => "guest"))
+            return
+          end
+          unless Vagrant::Util::Which.which('rsync')
+            env[:ui].warn(I18n.t('vagrant_hp.rsync_not_found_warning', :side => "host"))
+            return
+          end
 
           env[:machine].config.vm.synced_folders.each do |id, data|
             next if data[:hostpath] == '.'

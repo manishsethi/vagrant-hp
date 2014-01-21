@@ -18,6 +18,9 @@ en:
       Machine is booted and ready for use!
     rsync_folder: |-
       Rsyncing folder: %{hostpath} => %{guestpath}
+    rsync_not_found_warning: |-
+      Warning! Folder sync disabled because the rsync binary is missing in the %{side}.
+      Make sure rsync is installed and the binary can be found in the PATH.
     terminating: |-
       Terminating the instance...
     waiting_for_build: |-
